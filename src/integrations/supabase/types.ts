@@ -100,6 +100,48 @@ export type Database = {
         }
         Relationships: []
       }
+      services: {
+        Row: {
+          category: string
+          created_at: string
+          description: string
+          features: string[]
+          icon: string
+          id: string
+          is_active: boolean | null
+          popular: boolean | null
+          price: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description: string
+          features?: string[]
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          popular?: boolean | null
+          price: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string
+          features?: string[]
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          popular?: boolean | null
+          price?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

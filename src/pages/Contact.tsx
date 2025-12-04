@@ -8,34 +8,35 @@ import { Label } from "@/components/ui/label";
 import { MessageCircle, Instagram, Mail, Phone, MapPin, Send } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/hooks/use-toast";
+import { CONTACT_INFO } from "@/lib/contact";
 
 const contactMethods = [
   {
     icon: MessageCircle,
     title: "واتساب",
-    value: "+966 50 000 0000",
-    href: "https://wa.me/966500000000",
+    value: CONTACT_INFO.whatsapp.displayNumber,
+    href: CONTACT_INFO.whatsapp.link,
     color: "bg-green-500/10 text-green-500"
   },
   {
     icon: Instagram,
     title: "انستجرام",
-    value: "@moeen_alazab",
-    href: "https://instagram.com/moeen_alazab",
+    value: "@" + CONTACT_INFO.instagram.username,
+    href: CONTACT_INFO.instagram.link,
     color: "bg-pink-500/10 text-pink-500"
   },
   {
     icon: Mail,
     title: "البريد الإلكتروني",
-    value: "info@moeenalazab.com",
-    href: "mailto:info@moeenalazab.com",
+    value: CONTACT_INFO.email.address,
+    href: CONTACT_INFO.email.link,
     color: "bg-primary/10 text-primary"
   },
   {
     icon: Phone,
     title: "الهاتف",
-    value: "+966 50 000 0000",
-    href: "tel:+966500000000",
+    value: CONTACT_INFO.whatsapp.displayNumber,
+    href: CONTACT_INFO.phone.link,
     color: "bg-blue-500/10 text-blue-500"
   }
 ];

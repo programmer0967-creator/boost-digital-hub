@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, MessageCircle } from "lucide-react";
+import { CONTACT_INFO } from "@/lib/contact";
 
 export function CTASection() {
   return (
@@ -27,7 +28,7 @@ export function CTASection() {
                 <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               </Button>
             </Link>
-            <a href="https://wa.me/966500000000">
+            <a href={CONTACT_INFO.whatsapp.link} target="_blank" rel="noopener noreferrer">
               <Button variant="heroOutline" size="xl" className="group">
                 <MessageCircle className="w-5 h-5" />
                 تواصل واتساب

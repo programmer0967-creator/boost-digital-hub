@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { Flame, Instagram, MessageCircle, Mail, Phone } from "lucide-react";
+import { CONTACT_INFO } from "@/lib/contact";
 
 export function Footer() {
   return (
@@ -63,7 +64,9 @@ export function Footer() {
             <ul className="space-y-3">
               <li>
                 <a 
-                  href="https://wa.me/966500000000" 
+                  href={CONTACT_INFO.whatsapp.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm"
                 >
                   <MessageCircle className="w-4 h-4" />
@@ -72,16 +75,18 @@ export function Footer() {
               </li>
               <li>
                 <a 
-                  href="https://instagram.com/moeen_alazab" 
+                  href={CONTACT_INFO.instagram.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm"
                 >
                   <Instagram className="w-4 h-4" />
-                  <span>@moeen_alazab</span>
+                  <span>@{CONTACT_INFO.instagram.username}</span>
                 </a>
               </li>
               <li>
                 <a 
-                  href="mailto:info@moeenalazab.com" 
+                  href={CONTACT_INFO.email.link}
                   className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm"
                 >
                   <Mail className="w-4 h-4" />
@@ -90,7 +95,7 @@ export function Footer() {
               </li>
               <li>
                 <a 
-                  href="tel:+966500000000" 
+                  href={CONTACT_INFO.phone.link}
                   className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors text-sm"
                 >
                   <Phone className="w-4 h-4" />
@@ -107,13 +112,17 @@ export function Footer() {
           </p>
           <div className="flex items-center gap-4">
             <a 
-              href="https://instagram.com/moeen_alazab" 
+              href={CONTACT_INFO.instagram.link}
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
             >
               <Instagram className="w-5 h-5" />
             </a>
             <a 
-              href="https://wa.me/966500000000" 
+              href={CONTACT_INFO.whatsapp.link}
+              target="_blank"
+              rel="noopener noreferrer"
               className="w-10 h-10 rounded-full bg-card border border-border flex items-center justify-center hover:border-primary hover:text-primary transition-colors"
             >
               <MessageCircle className="w-5 h-5" />
