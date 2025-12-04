@@ -11,6 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ArrowRight, Send, CheckCircle } from "lucide-react";
 import { services } from "@/data/services";
 import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+const WHATSAPP_NUMBER = "966500000000";
 
 const RequestService = () => {
   const [searchParams] = useSearchParams();
@@ -24,7 +27,6 @@ const RequestService = () => {
     platform: "",
     accountLink: "",
     details: "",
-    budget: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -33,8 +35,25 @@ const RequestService = () => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    const { error } = await supabase.from("service_requests").insert({
+      name: formData.name,
+      email: formData.email,
+      phone: formData.phone,
+      service_type: formData.service,
+      platform: formData.platform || null,
+      account_link: formData.accountLink || null,
+      details: formData.details,
+    });
+
+    if (error) {
+      toast({
+        title: "حدث خطأ",
+        description: "لم نتمكن من إرسال طلبك. يرجى المحاولة مرة أخرى.",
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
     
     setIsSubmitted(true);
     setIsSubmitting(false);
@@ -59,7 +78,7 @@ const RequestService = () => {
                   <Link to="/">
                     <Button variant="outline">العودة للرئيسية</Button>
                   </Link>
-                  <a href="https://wa.me/966500000000">
+                  <a href={`https://wa.me/${WHATSAPP_NUMBER}`} target="_blank" rel="noopener noreferrer">
                     <Button variant="hero">تواصل واتساب</Button>
                   </a>
                 </div>
@@ -153,6 +172,7 @@ const RequestService = () => {
                         <Select 
                           value={formData.service} 
                           onValueChange={(value) => setFormData({ ...formData, service: value })}
+                          required
                         >
                           <SelectTrigger className="bg-card/50">
                             <SelectValue placeholder="اختر الخدمة" />
@@ -209,26 +229,6 @@ const RequestService = () => {
                         required
                         className="bg-card/50"
                       />
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>الميزانية المتوقعة</Label>
-                      <Select 
-                        value={formData.budget} 
-                        onValueChange={(value) => setFormData({ ...formData, budget: value })}
-                      >
-                        <SelectTrigger className="bg-card/50">
-                          <SelectValue placeholder="حدد ميزانيتك" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="under100">أقل من 100 ريال</SelectItem>
-                          <SelectItem value="100-500">100 - 500 ريال</SelectItem>
-                          <SelectItem value="500-1000">500 - 1000 ريال</SelectItem>
-                          <SelectItem value="1000-5000">1000 - 5000 ريال</SelectItem>
-                          <SelectItem value="over5000">أكثر من 5000 ريال</SelectItem>
-                          <SelectItem value="discuss">نناقش الميزانية</SelectItem>
-                        </SelectContent>
-                      </Select>
                     </div>
                   </div>
 

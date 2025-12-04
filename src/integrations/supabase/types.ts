@@ -14,16 +14,132 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      ratings: {
+        Row: {
+          comment: string | null
+          created_at: string | null
+          id: string
+          is_approved: boolean | null
+          name: string
+          rating: number
+          service_request_id: string | null
+          service_type: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          is_approved?: boolean | null
+          name: string
+          rating: number
+          service_request_id?: string | null
+          service_type: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string | null
+          id?: string
+          is_approved?: boolean | null
+          name?: string
+          rating?: number
+          service_request_id?: string | null
+          service_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ratings_service_request_id_fkey"
+            columns: ["service_request_id"]
+            isOneToOne: false
+            referencedRelation: "service_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_requests: {
+        Row: {
+          account_link: string | null
+          admin_notes: string | null
+          created_at: string | null
+          details: string | null
+          email: string
+          id: string
+          name: string
+          phone: string
+          platform: string | null
+          service_type: string
+          status: Database["public"]["Enums"]["request_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          account_link?: string | null
+          admin_notes?: string | null
+          created_at?: string | null
+          details?: string | null
+          email: string
+          id?: string
+          name: string
+          phone: string
+          platform?: string | null
+          service_type: string
+          status?: Database["public"]["Enums"]["request_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          account_link?: string | null
+          admin_notes?: string | null
+          created_at?: string | null
+          details?: string | null
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          platform?: string | null
+          service_type?: string
+          status?: Database["public"]["Enums"]["request_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
+      request_status:
+        | "new"
+        | "analyzing"
+        | "confirmed"
+        | "in_progress"
+        | "monitoring"
+        | "completed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +266,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+      request_status: [
+        "new",
+        "analyzing",
+        "confirmed",
+        "in_progress",
+        "monitoring",
+        "completed",
+      ],
+    },
   },
 } as const
