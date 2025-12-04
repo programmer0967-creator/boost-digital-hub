@@ -3,20 +3,19 @@ import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
-  LayoutDashboard, 
   ShoppingBag, 
   Star,
   Menu,
   X,
   Flame,
-  TrendingUp,
-  Users,
   Clock,
   ArrowLeft,
   LogOut,
   CheckCircle,
-  XCircle
+  XCircle,
+  Package
 } from "lucide-react";
+import { ServicesManager } from "@/components/admin/ServicesManager";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -60,7 +59,7 @@ interface Rating {
 
 const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"orders" | "ratings">("orders");
+  const [activeTab, setActiveTab] = useState<"orders" | "ratings" | "services">("orders");
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -180,6 +179,16 @@ const AdminDashboard = () => {
               <Star className="w-5 h-5" />
               <span className="font-medium">التقييمات</span>
             </button>
+            <button
+              onClick={() => setActiveTab("services")}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full",
+                activeTab === "services" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-card-hover"
+              )}
+            >
+              <Package className="w-5 h-5" />
+              <span className="font-medium">الخدمات</span>
+            </button>
           </nav>
         </div>
 
@@ -239,7 +248,7 @@ const AdminDashboard = () => {
             ))}
           </div>
 
-          {activeTab === "orders" ? (
+          {activeTab === "orders" && (
             <Card variant="glass">
               <CardHeader>
                 <CardTitle>الطلبات</CardTitle>
@@ -290,7 +299,9 @@ const AdminDashboard = () => {
                 </div>
               </CardContent>
             </Card>
-          ) : (
+          )}
+
+          {activeTab === "ratings" && (
             <Card variant="glass">
               <CardHeader>
                 <CardTitle>التقييمات</CardTitle>
@@ -342,6 +353,8 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           )}
+
+          {activeTab === "services" && <ServicesManager />}
         </div>
       </main>
     </div>
