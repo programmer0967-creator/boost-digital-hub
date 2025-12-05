@@ -1,39 +1,52 @@
-import { Shield, Clock, HeadphonesIcon, Award, Zap, Users } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Shield, Clock, HeadphonesIcon, Award, Zap, Users, Star, Heart, Rocket, Target } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-const features = [
-  {
-    icon: Shield,
-    title: "أمان وموثوقية",
-    description: "نحرص على سرية بياناتك وأمان حساباتك بشكل كامل"
-  },
-  {
-    icon: Clock,
-    title: "تسليم سريع",
-    description: "نلتزم بمواعيد التسليم المتفق عليها دون تأخير"
-  },
-  {
-    icon: HeadphonesIcon,
-    title: "دعم متواصل",
-    description: "فريق دعم متاح على مدار الساعة للإجابة على استفساراتك"
-  },
-  {
-    icon: Award,
-    title: "جودة عالية",
-    description: "نقدم خدمات احترافية بأعلى معايير الجودة"
-  },
-  {
-    icon: Zap,
-    title: "نتائج ملموسة",
-    description: "نركز على تحقيق نتائج حقيقية تساعدك على النمو"
-  },
-  {
-    icon: Users,
-    title: "خبرة واسعة",
-    description: "سنوات من الخبرة في مجال السوشيال ميديا والتسويق"
-  }
+const iconMap: Record<string, any> = {
+  Shield, Clock, HeadphonesIcon, Award, Zap, Users, Star, Heart, Rocket, Target
+};
+
+const defaultFeatures = [
+  { icon: "Shield", title: "أمان وموثوقية", description: "نحرص على سرية بياناتك وأمان حساباتك بشكل كامل" },
+  { icon: "Clock", title: "تسليم سريع", description: "نلتزم بمواعيد التسليم المتفق عليها دون تأخير" },
+  { icon: "HeadphonesIcon", title: "دعم متواصل", description: "فريق دعم متاح على مدار الساعة للإجابة على استفساراتك" },
+  { icon: "Award", title: "جودة عالية", description: "نقدم خدمات احترافية بأعلى معايير الجودة" },
+  { icon: "Zap", title: "نتائج ملموسة", description: "نركز على تحقيق نتائج حقيقية تساعدك على النمو" },
+  { icon: "Users", title: "خبرة واسعة", description: "سنوات من الخبرة في مجال السوشيال ميديا والتسويق" }
 ];
 
+interface Feature {
+  id: string;
+  icon: string;
+  title: string;
+  description: string;
+  sort_order: number;
+  is_active: boolean;
+}
+
 export function WhyChooseUs() {
+  const [features, setFeatures] = useState<Feature[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchFeatures();
+  }, []);
+
+  const fetchFeatures = async () => {
+    const { data, error } = await supabase
+      .from("features")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
+
+    if (!error && data && data.length > 0) {
+      setFeatures(data);
+    }
+    setIsLoading(false);
+  };
+
+  const displayFeatures = features.length > 0 ? features : defaultFeatures.map((f, i) => ({ ...f, id: String(i), sort_order: i, is_active: true }));
+
   return (
     <section className="py-24">
       <div className="container mx-auto px-4">
@@ -50,20 +63,23 @@ export function WhyChooseUs() {
             </p>
             
             <div className="grid grid-cols-2 gap-4">
-              {features.slice(0, 4).map((feature, index) => (
-                <div 
-                  key={index} 
-                  className="flex items-start gap-3 p-4 rounded-xl bg-card/50 border border-border/50 hover:border-primary/30 transition-colors"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                    <feature.icon className="w-5 h-5 text-primary" />
+              {displayFeatures.slice(0, 4).map((feature, index) => {
+                const IconComponent = iconMap[feature.icon] || Zap;
+                return (
+                  <div 
+                    key={feature.id || index} 
+                    className="flex items-start gap-3 p-4 rounded-xl bg-card/50 border border-border/50 hover:border-primary/30 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <IconComponent className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-sm mb-1">{feature.title}</h4>
+                      <p className="text-xs text-muted-foreground">{feature.description}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-bold text-sm mb-1">{feature.title}</h4>
-                    <p className="text-xs text-muted-foreground">{feature.description}</p>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

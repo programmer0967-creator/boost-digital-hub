@@ -1,66 +1,59 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ExternalLink, TrendingUp, Users, Eye } from "lucide-react";
+import { TrendingUp, Users, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 
-const portfolioItems = [
-  {
-    id: 1,
-    title: "حملة تسويقية لمتجر إلكتروني",
-    category: "تسويق",
-    description: "زيادة المبيعات بنسبة 150% خلال شهر واحد من خلال إدارة حملات إعلانية متكاملة",
-    stats: { followers: "50K+", engagement: "8%", reach: "500K" },
-    gradient: "from-primary/30 to-accent/30"
-  },
-  {
-    id: 2,
-    title: "نمو حساب مؤثر",
-    category: "نمو",
-    description: "من 5 آلاف إلى 100 ألف متابع حقيقي خلال 3 أشهر مع الحفاظ على التفاعل",
-    stats: { followers: "100K", engagement: "12%", reach: "1M" },
-    gradient: "from-emerald-500/30 to-teal-500/30"
-  },
-  {
-    id: 3,
-    title: "إدارة حساب علامة تجارية",
-    category: "إدارة",
-    description: "إدارة متكاملة لحسابات العلامة التجارية على جميع المنصات مع تحسين الأداء",
-    stats: { followers: "25K", engagement: "15%", reach: "300K" },
-    gradient: "from-violet-500/30 to-purple-500/30"
-  },
-  {
-    id: 4,
-    title: "استراتيجية محتوى لصانع محتوى",
-    category: "استشارات",
-    description: "تطوير استراتيجية محتوى شاملة أدت لمضاعفة الدخل 3 مرات",
-    stats: { followers: "200K", engagement: "10%", reach: "2M" },
-    gradient: "from-amber-500/30 to-orange-500/30"
-  },
-  {
-    id: 5,
-    title: "حملة رشق تفاعل",
-    category: "نمو",
-    description: "رفع معدل التفاعل من 2% إلى 18% مع محافظة على جودة المتابعين",
-    stats: { followers: "75K", engagement: "18%", reach: "800K" },
-    gradient: "from-rose-500/30 to-pink-500/30"
-  },
-  {
-    id: 6,
-    title: "بناء علامة تجارية من الصفر",
-    category: "تسويق",
-    description: "بناء هوية رقمية متكاملة وإطلاق حسابات السوشيال ميديا بنجاح",
-    stats: { followers: "30K", engagement: "14%", reach: "400K" },
-    gradient: "from-cyan-500/30 to-blue-500/30"
-  }
+interface PortfolioItem {
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  followers: string;
+  engagement: string;
+  reach: string;
+  gradient: string;
+  is_active: boolean;
+}
+
+const defaultItems = [
+  { id: "1", title: "حملة تسويقية لمتجر إلكتروني", category: "تسويق", description: "زيادة المبيعات بنسبة 150% خلال شهر واحد من خلال إدارة حملات إعلانية متكاملة", followers: "50K+", engagement: "8%", reach: "500K", gradient: "from-primary/30 to-accent/30", is_active: true },
+  { id: "2", title: "نمو حساب مؤثر", category: "نمو", description: "من 5 آلاف إلى 100 ألف متابع حقيقي خلال 3 أشهر مع الحفاظ على التفاعل", followers: "100K", engagement: "12%", reach: "1M", gradient: "from-emerald-500/30 to-teal-500/30", is_active: true },
+  { id: "3", title: "إدارة حساب علامة تجارية", category: "إدارة", description: "إدارة متكاملة لحسابات العلامة التجارية على جميع المنصات مع تحسين الأداء", followers: "25K", engagement: "15%", reach: "300K", gradient: "from-violet-500/30 to-purple-500/30", is_active: true },
+  { id: "4", title: "استراتيجية محتوى لصانع محتوى", category: "استشارات", description: "تطوير استراتيجية محتوى شاملة أدت لمضاعفة الدخل 3 مرات", followers: "200K", engagement: "10%", reach: "2M", gradient: "from-amber-500/30 to-orange-500/30", is_active: true },
+  { id: "5", title: "حملة رشق تفاعل", category: "نمو", description: "رفع معدل التفاعل من 2% إلى 18% مع محافظة على جودة المتابعين", followers: "75K", engagement: "18%", reach: "800K", gradient: "from-rose-500/30 to-pink-500/30", is_active: true },
+  { id: "6", title: "بناء علامة تجارية من الصفر", category: "تسويق", description: "بناء هوية رقمية متكاملة وإطلاق حسابات السوشيال ميديا بنجاح", followers: "30K", engagement: "14%", reach: "400K", gradient: "from-cyan-500/30 to-blue-500/30", is_active: true }
 ];
-
-const categories = ["الكل", "تسويق", "نمو", "إدارة", "استشارات"];
 
 const Portfolio = () => {
   const [activeCategory, setActiveCategory] = useState("الكل");
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
+  const [categories, setCategories] = useState<string[]>(["الكل"]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    fetchPortfolio();
+  }, []);
+
+  const fetchPortfolio = async () => {
+    const { data, error } = await supabase
+      .from("portfolio_items")
+      .select("*")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
+
+    if (!error && data && data.length > 0) {
+      setPortfolioItems(data);
+      const uniqueCategories = ["الكل", ...new Set(data.map((item) => item.category))];
+      setCategories(uniqueCategories);
+    } else {
+      setPortfolioItems(defaultItems);
+      setCategories(["الكل", "تسويق", "نمو", "إدارة", "استشارات"]);
+    }
+    setIsLoading(false);
+  };
 
   const filteredItems = activeCategory === "الكل"
     ? portfolioItems
@@ -101,53 +94,61 @@ const Portfolio = () => {
             ))}
           </div>
 
-          {/* Portfolio Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredItems.map((item) => (
-              <Card key={item.id} variant="service" className="overflow-hidden group">
-                {/* Visual Header */}
-                <div className={cn("h-48 bg-gradient-to-br relative", item.gradient)}>
-                  <div className="absolute inset-0 bg-hero-pattern opacity-30" />
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <TrendingUp className="w-12 h-12 text-foreground/80 mx-auto mb-2" />
-                      <span className="text-sm font-medium text-foreground/60">{item.category}</span>
+          {isLoading ? (
+            <p className="text-center text-muted-foreground py-8">جاري التحميل...</p>
+          ) : (
+            /* Portfolio Grid */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredItems.map((item) => (
+                <Card key={item.id} variant="service" className="overflow-hidden group">
+                  {/* Visual Header */}
+                  <div className={cn("h-48 bg-gradient-to-br relative", item.gradient)}>
+                    <div className="absolute inset-0 bg-hero-pattern opacity-30" />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-center">
+                        <TrendingUp className="w-12 h-12 text-foreground/80 mx-auto mb-2" />
+                        <span className="text-sm font-medium text-foreground/60">{item.category}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                <CardContent className="p-6">
-                  <h3 className="text-xl font-bold mb-2">{item.title}</h3>
-                  <p className="text-muted-foreground text-sm mb-4">{item.description}</p>
                   
-                  {/* Stats */}
-                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border/50">
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1 mb-1">
-                        <Users className="w-3 h-3 text-primary" />
-                        <span className="font-bold text-sm">{item.stats.followers}</span>
+                  <CardContent className="p-6">
+                    <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                    <p className="text-muted-foreground text-sm mb-4">{item.description}</p>
+                    
+                    {/* Stats */}
+                    <div className="grid grid-cols-3 gap-4 pt-4 border-t border-border/50">
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <Users className="w-3 h-3 text-primary" />
+                          <span className="font-bold text-sm">{item.followers}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">متابعين</span>
                       </div>
-                      <span className="text-xs text-muted-foreground">متابعين</span>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1 mb-1">
-                        <TrendingUp className="w-3 h-3 text-primary" />
-                        <span className="font-bold text-sm">{item.stats.engagement}</span>
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <TrendingUp className="w-3 h-3 text-primary" />
+                          <span className="font-bold text-sm">{item.engagement}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">تفاعل</span>
                       </div>
-                      <span className="text-xs text-muted-foreground">تفاعل</span>
-                    </div>
-                    <div className="text-center">
-                      <div className="flex items-center justify-center gap-1 mb-1">
-                        <Eye className="w-3 h-3 text-primary" />
-                        <span className="font-bold text-sm">{item.stats.reach}</span>
+                      <div className="text-center">
+                        <div className="flex items-center justify-center gap-1 mb-1">
+                          <Eye className="w-3 h-3 text-primary" />
+                          <span className="font-bold text-sm">{item.reach}</span>
+                        </div>
+                        <span className="text-xs text-muted-foreground">وصول</span>
                       </div>
-                      <span className="text-xs text-muted-foreground">وصول</span>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+
+          {!isLoading && filteredItems.length === 0 && (
+            <p className="text-center text-muted-foreground py-8">لا توجد أعمال في هذا التصنيف</p>
+          )}
         </div>
       </main>
 
