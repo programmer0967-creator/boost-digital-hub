@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      features: {
+        Row: {
+          created_at: string | null
+          description: string
+          icon: string
+          id: string
+          is_active: boolean | null
+          sort_order: number | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          sort_order?: number | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          is_active?: boolean | null
+          sort_order?: number | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      portfolio_items: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string
+          engagement: string | null
+          followers: string | null
+          gradient: string | null
+          id: string
+          is_active: boolean | null
+          reach: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description: string
+          engagement?: string | null
+          followers?: string | null
+          gradient?: string | null
+          id?: string
+          is_active?: boolean | null
+          reach?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string
+          engagement?: string | null
+          followers?: string | null
+          gradient?: string | null
+          id?: string
+          is_active?: boolean | null
+          reach?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       ratings: {
         Row: {
           comment: string | null
@@ -139,6 +214,30 @@ export type Database = {
           price?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      site_settings: {
+        Row: {
+          created_at: string | null
+          id: string
+          key: string
+          updated_at: string | null
+          value: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          key: string
+          updated_at?: string | null
+          value: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          key?: string
+          updated_at?: string | null
+          value?: string
         }
         Relationships: []
       }

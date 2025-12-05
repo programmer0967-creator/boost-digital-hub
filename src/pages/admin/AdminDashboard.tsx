@@ -13,9 +13,13 @@ import {
   LogOut,
   CheckCircle,
   XCircle,
-  Package
+  Package,
+  Image,
+  Award
 } from "lucide-react";
 import { ServicesManager } from "@/components/admin/ServicesManager";
+import { PortfolioManager } from "@/components/admin/PortfolioManager";
+import { FeaturesManager } from "@/components/admin/FeaturesManager";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,7 +63,7 @@ interface Rating {
 
 const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"orders" | "ratings" | "services">("orders");
+  const [activeTab, setActiveTab] = useState<"orders" | "ratings" | "services" | "portfolio" | "features">("orders");
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [ratings, setRatings] = useState<Rating[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -188,6 +192,26 @@ const AdminDashboard = () => {
             >
               <Package className="w-5 h-5" />
               <span className="font-medium">الخدمات</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("portfolio")}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full",
+                activeTab === "portfolio" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-card-hover"
+              )}
+            >
+              <Image className="w-5 h-5" />
+              <span className="font-medium">معرض الأعمال</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("features")}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full",
+                activeTab === "features" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-card-hover"
+              )}
+            >
+              <Award className="w-5 h-5" />
+              <span className="font-medium">لماذا تختارنا</span>
             </button>
           </nav>
         </div>
@@ -355,6 +379,10 @@ const AdminDashboard = () => {
           )}
 
           {activeTab === "services" && <ServicesManager />}
+
+          {activeTab === "portfolio" && <PortfolioManager />}
+
+          {activeTab === "features" && <FeaturesManager />}
         </div>
       </main>
     </div>
