@@ -15,11 +15,15 @@ import {
   XCircle,
   Package,
   Image,
-  Award
+  Award,
+  Settings,
+  BarChart3,
+  TrendingUp
 } from "lucide-react";
 import { ServicesManager } from "@/components/admin/ServicesManager";
 import { PortfolioManager } from "@/components/admin/PortfolioManager";
 import { FeaturesManager } from "@/components/admin/FeaturesManager";
+import { SettingsManager } from "@/components/admin/SettingsManager";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,9 +67,12 @@ interface Rating {
 
 const AdminDashboard = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"orders" | "ratings" | "services" | "portfolio" | "features">("orders");
+  const [activeTab, setActiveTab] = useState<"orders" | "ratings" | "services" | "portfolio" | "features" | "settings" | "stats">("orders");
   const [requests, setRequests] = useState<ServiceRequest[]>([]);
   const [ratings, setRatings] = useState<Rating[]>([]);
+  const [portfolioCount, setPortfolioCount] = useState(0);
+  const [featuresCount, setFeaturesCount] = useState(0);
+  const [servicesCount, setServicesCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const { user, isAdmin, isLoading: authLoading, signOut } = useAuth();
   const navigate = useNavigate();
@@ -85,13 +92,19 @@ const AdminDashboard = () => {
   const fetchData = async () => {
     setIsLoading(true);
     
-    const [requestsRes, ratingsRes] = await Promise.all([
+    const [requestsRes, ratingsRes, portfolioRes, featuresRes, servicesRes] = await Promise.all([
       supabase.from("service_requests").select("*").order("created_at", { ascending: false }),
       supabase.from("ratings").select("*").order("created_at", { ascending: false }),
+      supabase.from("portfolio_items").select("id", { count: "exact" }),
+      supabase.from("features").select("id", { count: "exact" }),
+      supabase.from("services").select("id", { count: "exact" }),
     ]);
 
     if (requestsRes.data) setRequests(requestsRes.data);
     if (ratingsRes.data) setRatings(ratingsRes.data);
+    if (portfolioRes.count !== null) setPortfolioCount(portfolioRes.count);
+    if (featuresRes.count !== null) setFeaturesCount(featuresRes.count);
+    if (servicesRes.count !== null) setServicesCount(servicesRes.count);
     
     setIsLoading(false);
   };
@@ -145,6 +158,8 @@ const AdminDashboard = () => {
     { label: "طلبات جديدة", value: requests.filter(r => r.status === "new").length.toString(), icon: Clock, color: "text-amber-500" },
     { label: "طلبات مكتملة", value: requests.filter(r => r.status === "completed").length.toString(), icon: CheckCircle, color: "text-green-500" },
     { label: "التقييمات", value: ratings.length.toString(), icon: Star, color: "text-primary" },
+    { label: "الخدمات", value: servicesCount.toString(), icon: Package, color: "text-cyan-500" },
+    { label: "معرض الأعمال", value: portfolioCount.toString(), icon: Image, color: "text-violet-500" },
   ];
 
   return (
@@ -213,6 +228,26 @@ const AdminDashboard = () => {
               <Award className="w-5 h-5" />
               <span className="font-medium">لماذا تختارنا</span>
             </button>
+            <button
+              onClick={() => setActiveTab("stats")}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full",
+                activeTab === "stats" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-card-hover"
+              )}
+            >
+              <BarChart3 className="w-5 h-5" />
+              <span className="font-medium">الإحصائيات</span>
+            </button>
+            <button
+              onClick={() => setActiveTab("settings")}
+              className={cn(
+                "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full",
+                activeTab === "settings" ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-card-hover"
+              )}
+            >
+              <Settings className="w-5 h-5" />
+              <span className="font-medium">الإعدادات</span>
+            </button>
           </nav>
         </div>
 
@@ -254,7 +289,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
             {stats.map((stat, index) => (
               <Card key={index} variant="glass">
                 <CardContent className="p-6">
@@ -383,6 +418,126 @@ const AdminDashboard = () => {
           {activeTab === "portfolio" && <PortfolioManager />}
 
           {activeTab === "features" && <FeaturesManager />}
+
+          {activeTab === "settings" && <SettingsManager />}
+
+          {activeTab === "stats" && (
+            <div className="space-y-6">
+              <Card variant="glass">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5" />
+                    إحصائيات عامة
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="p-6 rounded-xl bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                          <ShoppingBag className="w-6 h-6 text-blue-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">إجمالي الطلبات</p>
+                          <p className="text-3xl font-black">{requests.length}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <TrendingUp className="w-4 h-4 text-green-500" />
+                        <span className="text-green-500">{requests.filter(r => r.status === "completed").length} مكتملة</span>
+                      </div>
+                    </div>
+
+                    <div className="p-6 rounded-xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center">
+                          <Star className="w-6 h-6 text-amber-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">التقييمات</p>
+                          <p className="text-3xl font-black">{ratings.length}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm">
+                        <CheckCircle className="w-4 h-4 text-green-500" />
+                        <span className="text-green-500">{ratings.filter(r => r.is_approved).length} موافق عليها</span>
+                      </div>
+                    </div>
+
+                    <div className="p-6 rounded-xl bg-gradient-to-br from-violet-500/10 to-purple-500/10 border border-violet-500/20">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-violet-500/20 flex items-center justify-center">
+                          <Package className="w-6 h-6 text-violet-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">الخدمات النشطة</p>
+                          <p className="text-3xl font-black">{servicesCount}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 rounded-xl bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border border-emerald-500/20">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                          <Image className="w-6 h-6 text-emerald-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">معرض الأعمال</p>
+                          <p className="text-3xl font-black">{portfolioCount}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 rounded-xl bg-gradient-to-br from-rose-500/10 to-pink-500/10 border border-rose-500/20">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-rose-500/20 flex items-center justify-center">
+                          <Award className="w-6 h-6 text-rose-500" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">المميزات</p>
+                          <p className="text-3xl font-black">{featuresCount}</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="p-6 rounded-xl bg-gradient-to-br from-primary/10 to-accent/10 border border-primary/20">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
+                          <Clock className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">طلبات قيد الانتظار</p>
+                          <p className="text-3xl font-black">{requests.filter(r => r.status === "new" || r.status === "analyzing").length}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Status Distribution */}
+              <Card variant="glass">
+                <CardHeader>
+                  <CardTitle>توزيع حالات الطلبات</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    {Object.entries(statusLabels).map(([status, label]) => {
+                      const count = requests.filter(r => r.status === status).length;
+                      return (
+                        <div key={status} className="text-center p-4 rounded-lg bg-card/50 border border-border/50">
+                          <p className="text-2xl font-bold mb-1">{count}</p>
+                          <p className={cn("text-xs px-2 py-1 rounded-full inline-block", statusColors[status])}>
+                            {label}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
         </div>
       </main>
     </div>
