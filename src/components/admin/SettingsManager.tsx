@@ -15,6 +15,52 @@ interface SiteSetting {
   value: string;
 }
 
+function EmailChangeSection({ currentEmail }: { currentEmail: string }) {
+  const [newEmail, setNewEmail] = useState("");
+  const [isChanging, setIsChanging] = useState(false);
+
+  const handleEmailChange = async () => {
+    if (!newEmail || newEmail === currentEmail) {
+      toast({ title: "يرجى إدخال بريد إلكتروني جديد", variant: "destructive" });
+      return;
+    }
+
+    setIsChanging(true);
+    const { error } = await supabase.auth.updateUser({ email: newEmail });
+
+    if (error) {
+      toast({ title: "خطأ في تغيير البريد الإلكتروني", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "تم إرسال رابط التأكيد للبريد الجديد" });
+      setNewEmail("");
+    }
+    setIsChanging(false);
+  };
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <Label>البريد الإلكتروني الحالي</Label>
+        <Input value={currentEmail} disabled className="bg-muted" />
+      </div>
+      <div>
+        <Label>البريد الإلكتروني الجديد</Label>
+        <Input
+          type="email"
+          value={newEmail}
+          onChange={(e) => setNewEmail(e.target.value)}
+          placeholder="أدخل البريد الإلكتروني الجديد"
+          dir="ltr"
+        />
+      </div>
+      <Button onClick={handleEmailChange} disabled={isChanging || !newEmail}>
+        <Mail className="w-4 h-4" />
+        {isChanging ? "جاري التغيير..." : "تغيير البريد الإلكتروني"}
+      </Button>
+    </div>
+  );
+}
+
 export function SettingsManager() {
   const [settings, setSettings] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(true);
@@ -155,10 +201,7 @@ export function SettingsManager() {
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div>
-                  <Label>البريد الإلكتروني</Label>
-                  <Input value={user?.email || ""} disabled className="bg-muted" />
-                </div>
+                <EmailChangeSection currentEmail={user?.email || ""} />
               </CardContent>
             </Card>
 
