@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Star } from "lucide-react";
+import { z } from "zod";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +10,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { services } from "@/data/services";
+
+// Validation schema for rating form
+const serviceIds = services.map(s => s.id);
+const ratingSchema = z.object({
+  name: z.string()
+    .trim()
+    .min(2, "الاسم يجب أن يكون حرفين على الأقل")
+    .max(100, "الاسم يجب أن لا يتجاوز 100 حرف"),
+  rating: z.number()
+    .int("التقييم يجب أن يكون رقماً صحيحاً")
+    .min(1, "يرجى اختيار التقييم")
+    .max(5, "التقييم يجب أن يكون بين 1 و 5"),
+  serviceType: z.string()
+    .min(1, "يرجى اختيار الخدمة")
+    .refine(val => serviceIds.includes(val), "الخدمة المختارة غير صالحة"),
+  comment: z.string()
+    .trim()
+    .max(1000, "التعليق يجب أن لا يتجاوز 1000 حرف")
+    .optional()
+    .or(z.literal("")),
+});
 
 interface RatingFormProps {
   onSuccess?: () => void;
@@ -24,22 +46,34 @@ export function RatingForm({ onSuccess }: RatingFormProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (rating === 0) {
+    setIsSubmitting(true);
+
+    // Validate form data with zod
+    const validationResult = ratingSchema.safeParse({
+      name,
+      rating,
+      serviceType,
+      comment,
+    });
+
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
       toast({
-        title: "يرجى اختيار التقييم",
+        title: "خطأ في البيانات",
+        description: firstError.message,
         variant: "destructive",
       });
+      setIsSubmitting(false);
       return;
     }
 
-    setIsSubmitting(true);
+    const validatedData = validationResult.data;
 
     const { error } = await supabase.from("ratings").insert({
-      name,
-      rating,
-      comment,
-      service_type: serviceType,
+      name: validatedData.name,
+      rating: validatedData.rating,
+      comment: validatedData.comment || null,
+      service_type: validatedData.serviceType,
     });
 
     if (error) {
