@@ -113,7 +113,7 @@ const Contact = () => {
                   <div>
                     <h3 className="font-bold mb-1">الموقع</h3>
                     <p className="text-sm text-muted-foreground">
-                      المملكة العربية السعودية
+                      اليمن
                     </p>
                   </div>
                 </div>
@@ -160,7 +160,7 @@ const Contact = () => {
                           type="tel"
                           value={formData.phone}
                           onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          placeholder="+966 5X XXX XXXX"
+                          placeholder="+967 7XXXXXXXX"
                           className="bg-card/50"
                         />
                       </div>
