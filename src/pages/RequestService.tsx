@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useSearchParams, Link } from "react-router-dom";
+import { z } from "zod";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,6 +13,37 @@ import { ArrowRight, Send, CheckCircle } from "lucide-react";
 import { services } from "@/data/services";
 import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+
+// Validation schema for service request form
+const serviceRequestSchema = z.object({
+  name: z.string()
+    .trim()
+    .min(2, "الاسم يجب أن يكون حرفين على الأقل")
+    .max(100, "الاسم يجب أن لا يتجاوز 100 حرف"),
+  email: z.string()
+    .trim()
+    .email("البريد الإلكتروني غير صالح")
+    .max(255, "البريد الإلكتروني طويل جداً"),
+  phone: z.string()
+    .trim()
+    .min(8, "رقم الهاتف يجب أن يكون 8 أرقام على الأقل")
+    .max(20, "رقم الهاتف طويل جداً")
+    .regex(/^[\d\s+()-]+$/, "رقم الهاتف يحتوي على رموز غير صالحة"),
+  service: z.string().min(1, "يرجى اختيار الخدمة"),
+  platform: z.string().optional(),
+  accountLink: z.string()
+    .max(500, "الرابط طويل جداً")
+    .refine(
+      (val) => !val || val.startsWith("http://") || val.startsWith("https://") || val === "",
+      "الرابط يجب أن يبدأ بـ http:// أو https://"
+    )
+    .optional()
+    .or(z.literal("")),
+  details: z.string()
+    .trim()
+    .min(10, "التفاصيل يجب أن تكون 10 أحرف على الأقل")
+    .max(2000, "التفاصيل يجب أن لا تتجاوز 2000 حرف"),
+});
 
 const WHATSAPP_NUMBER = "966500000000";
 
@@ -34,15 +66,31 @@ const RequestService = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+
+    // Validate form data with zod
+    const validationResult = serviceRequestSchema.safeParse(formData);
+    
+    if (!validationResult.success) {
+      const firstError = validationResult.error.errors[0];
+      toast({
+        title: "خطأ في البيانات",
+        description: firstError.message,
+        variant: "destructive",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    const validatedData = validationResult.data;
     
     const { error } = await supabase.from("service_requests").insert({
-      name: formData.name,
-      email: formData.email,
-      phone: formData.phone,
-      service_type: formData.service,
-      platform: formData.platform || null,
-      account_link: formData.accountLink || null,
-      details: formData.details,
+      name: validatedData.name,
+      email: validatedData.email,
+      phone: validatedData.phone,
+      service_type: validatedData.service,
+      platform: validatedData.platform || null,
+      account_link: validatedData.accountLink || null,
+      details: validatedData.details,
     });
 
     if (error) {
