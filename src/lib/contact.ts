@@ -10,8 +10,8 @@ export const CONTACT_INFO = {
     link: "https://instagram.com/x.gc",
   },
   email: {
-    address: "info@moeenalazab.com",
-    link: "mailto:info@moeenalazab.com",
+    address: "moeenalazab.com",
+    link: "https://moeenalazab.com",
   },
   phone: {
     number: "+967737514726",
